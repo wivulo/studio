@@ -15,9 +15,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}>
-        {children}
+    <html lang="en" className="h-full">
+      <body className={`${GeistSans.variable} ${GeistMono.variable} antialiased h-full flex flex-col overflow-hidden`}>
+        <div className="flex-grow flex flex-col overflow-hidden">
+          {children}
+        </div>
         <Toaster />
       </body>
     </html>

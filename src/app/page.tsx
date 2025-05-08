@@ -5,7 +5,7 @@ import { Play } from 'lucide-react';
 
 export default function HomePage() {
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen p-6 bg-background text-foreground">
+    <main className="flex flex-col items-center justify-center flex-grow p-6 bg-background text-foreground overflow-hidden">
       <div className="flex flex-col items-center space-y-12 text-center">
         <header className="space-y-4">
           <h1 className="text-6xl font-extrabold tracking-tight text-primary drop-shadow-md">
