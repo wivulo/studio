@@ -156,7 +156,7 @@ export default function SnakeGame() {
     ctx.fillRect(0, 0, BOARD_WIDTH_PX, BOARD_HEIGHT_PX);
     
     // Draw food
-    ctx.fillStyle = getColorFromCSSVar('--accent', '#386641');
+    ctx.fillStyle = getColorFromCSSVar('--destructive', '#E53E3E'); // Changed to destructive (red)
     ctx.fillRect(food.x * CELL_SIZE, food.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
     // Add a little highlight to food
     ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
