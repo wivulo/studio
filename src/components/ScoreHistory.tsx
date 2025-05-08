@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { History } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export function ScoreHistory() {
   const [scores, setScores] = useState<ScoreEntry[]>([]);
@@ -48,28 +49,31 @@ export function ScoreHistory() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableCaption>Your top scores.</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[80px]">Rank</TableHead>
-              <TableHead>Score</TableHead>
-              <TableHead className="text-right">Date</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {scores.map((entry, index) => (
-              <TableRow key={`${entry.date}-${index}`}>
-                <TableCell className="font-medium">{index + 1}</TableCell>
-                <TableCell>{entry.score}</TableCell>
-                <TableCell className="text-right">
-                  {new Date(entry.date).toLocaleDateString()}
-                </TableCell>
+        <ScrollArea className="max-h-[350px] pr-4"> {/* Added ScrollArea with max height */}
+          <Table>
+            <TableCaption>Your top scores.</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[80px]">Rank</TableHead>
+                <TableHead>Score</TableHead>
+                <TableHead className="text-right">Date</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {scores.map((entry, index) => (
+                <TableRow key={`${entry.date}-${entry.score}-${index}`}> {/* Ensured a more unique key */}
+                  <TableCell className="font-medium">{index + 1}</TableCell>
+                  <TableCell>{entry.score}</TableCell>
+                  <TableCell className="text-right">
+                    {new Date(entry.date).toLocaleDateString()}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </ScrollArea>
       </CardContent>
     </Card>
   );
 }
+
