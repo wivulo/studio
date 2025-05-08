@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from 'react';
@@ -29,7 +30,7 @@ export default function SnakeGame() {
   const [pendingDirection, setPendingDirection] = useState<Direction>('RIGHT');
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-  const [isPaused, setIsPaused] = useState(false); // Not fully implemented, but good for future
+  const [isPaused, setIsPaused] = useState(false); 
   const [gameSpeed, setGameSpeed] = useState(INITIAL_SNAKE_SPEED_MS);
 
   const router = useRouter();
@@ -84,7 +85,7 @@ export default function SnakeGame() {
     if (gameOver || isPaused) return;
 
     const gameLoop = setInterval(() => {
-      setDirection(pendingDirection); // Apply pending direction at the start of the tick
+      setDirection(pendingDirection); 
 
       setSnake(prevSnake => {
         const newSnake = [...prevSnake];
@@ -97,14 +98,12 @@ export default function SnakeGame() {
           case 'RIGHT': head.x += 1; break;
         }
 
-        // Wall collision
         if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE) {
           setGameOver(true);
           addScore(score);
           return prevSnake;
         }
 
-        // Self collision
         for (let i = 1; i < newSnake.length; i++) {
           if (newSnake[i].x === head.x && newSnake[i].y === head.y) {
             setGameOver(true);
@@ -113,16 +112,14 @@ export default function SnakeGame() {
           }
         }
         
-        newSnake.unshift(head); // Add new head
+        newSnake.unshift(head); 
 
-        // Food collision
         if (head.x === food.x && head.y === food.y) {
           setScore(s => s + 1);
           generateFood();
-          // Increase speed slightly
           setGameSpeed(speed => Math.max(50, speed - 2)); 
         } else {
-          newSnake.pop(); // Remove tail if no food eaten
+          newSnake.pop(); 
         }
         return newSnake;
       });
@@ -138,42 +135,57 @@ export default function SnakeGame() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const docStyle = getComputedStyle(document.documentElement);
+
+    const getColorFromCSSVar = (varName: string, fallbackColor: string): string => {
+      const rawValue = docStyle.getPropertyValue(varName).trim();
+      if (rawValue) {
+        // Check if rawValue is already a complete CSS color (hex, rgb, named, or full hsl/hsla)
+        // CSS.supports() is a reliable way to check this.
+        if (typeof CSS !== 'undefined' && CSS.supports && CSS.supports('color', rawValue)) {
+          return rawValue;
+        }
+        // Otherwise, assume it's H S L space-separated components for hsl()
+        return `hsl(${rawValue})`;
+      }
+      return fallbackColor;
+    };
+
     // Clear canvas
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--background').trim() || '#F0F0F0';
+    ctx.fillStyle = getColorFromCSSVar('--background', '#F0F0F0');
     ctx.fillRect(0, 0, BOARD_WIDTH_PX, BOARD_HEIGHT_PX);
     
     // Draw food
-    const foodColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#386641';
-    ctx.fillStyle = foodColor;
+    ctx.fillStyle = getColorFromCSSVar('--accent', '#386641');
     ctx.fillRect(food.x * CELL_SIZE, food.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
     // Add a little highlight to food
     ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
     ctx.fillRect(food.x * CELL_SIZE + CELL_SIZE * 0.2, food.y * CELL_SIZE + CELL_SIZE * 0.2, CELL_SIZE * 0.6, CELL_SIZE * 0.6);
 
-
     // Draw snake
-    const snakeColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#386641';
-    ctx.fillStyle = snakeColor;
+    const snakeBodyColor = getColorFromCSSVar('--accent', '#386641');
+    const snakeSegmentBorderColor = getColorFromCSSVar('--background', '#F0F0F0');
+
     snake.forEach((segment, index) => {
+      ctx.fillStyle = snakeBodyColor;
       ctx.fillRect(segment.x * CELL_SIZE, segment.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-      // Add a border effect to segments
-      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--background').trim() || '#F0F0F0';
+      
+      ctx.strokeStyle = snakeSegmentBorderColor;
       ctx.lineWidth = 1;
       ctx.strokeRect(segment.x * CELL_SIZE, segment.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
       
-      // Snake eyes for the head
-      if (index === 0) {
-        ctx.fillStyle = 'white';
+      if (index === 0) { // Snake eyes for the head
+        ctx.fillStyle = 'white'; // Eyes are white
         const eyeSize = CELL_SIZE / 5;
-        const eyeOffset1 = CELL_SIZE / 4;
-        const eyeOffset2 = CELL_SIZE * 3/4 - eyeSize;
+        const eyeOffset1 = CELL_SIZE / 4; // Offset from top/left for the first part of the eye
+        const eyePos2Factor = CELL_SIZE * 3/4 - eyeSize; // Start position for the second eye (relative to cell top/left)
 
-        if (direction === 'UP' || direction === 'DOWN') {
-            ctx.fillRect(segment.x * CELL_SIZE + eyeOffset1, segment.y * CELL_SIZE + eyeOffset1, eyeSize, eyeSize);
-            ctx.fillRect(segment.x * CELL_SIZE + eyeOffset2, segment.y * CELL_SIZE + eyeOffset1, eyeSize, eyeSize);
-        } else { // LEFT or RIGHT
-            ctx.fillRect(segment.x * CELL_SIZE + eyeOffset1, segment.y * CELL_SIZE + eyeOffset1, eyeSize, eyeSize);
-            ctx.fillRect(segment.x * CELL_SIZE + eyeOffset1, segment.y * CELL_SIZE + eyeOffset2, eyeSize, eyeSize);
+        if (direction === 'UP' || direction === 'DOWN') { // Eyes are horizontal
+            ctx.fillRect(segment.x * CELL_SIZE + eyeOffset1, segment.y * CELL_SIZE + eyeOffset1, eyeSize, eyeSize); // Left eye
+            ctx.fillRect(segment.x * CELL_SIZE + eyePos2Factor, segment.y * CELL_SIZE + eyeOffset1, eyeSize, eyeSize); // Right eye
+        } else { // LEFT or RIGHT - Eyes are vertical
+            ctx.fillRect(segment.x * CELL_SIZE + eyeOffset1, segment.y * CELL_SIZE + eyeOffset1, eyeSize, eyeSize); // Top eye
+            ctx.fillRect(segment.x * CELL_SIZE + eyeOffset1, segment.y * CELL_SIZE + eyePos2Factor, eyeSize, eyeSize); // Bottom eye
         }
       }
     });
@@ -221,3 +233,4 @@ export default function SnakeGame() {
     </div>
   );
 }
+
