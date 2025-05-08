@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { ScoreEntry } from '@/lib/scoreManager';
@@ -58,7 +59,7 @@ export function ScoreHistory() {
           </TableHeader>
           <TableBody>
             {scores.map((entry, index) => (
-              <TableRow key={entry.date}>
+              <TableRow key={`${entry.date}-${index}`}>
                 <TableCell className="font-medium">{index + 1}</TableCell>
                 <TableCell>{entry.score}</TableCell>
                 <TableCell className="text-right">
