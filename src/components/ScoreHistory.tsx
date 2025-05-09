@@ -30,33 +30,33 @@ export function ScoreHistory() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-2xl font-bold">
             <History className="h-6 w-6 text-primary" />
-            Score History
+            Histórico de Pontuações
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">No scores recorded yet. Play a game to see your history!</p>
+          <p className="text-muted-foreground">Nenhuma pontuação registrada ainda. Jogue para ver seu histórico!</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="w-full max-w-md shadow-lg">
+    <Card className="w-full max-w-md shadow-lg max-h-[300px] overflow-y-auto">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-2xl font-bold">
           <History className="h-6 w-6 text-primary" />
-          Score History
+          Histórico de Pontuações
         </CardTitle>
       </CardHeader>
       <CardContent>
         <ScrollArea className="max-h-[350px] pr-4"> {/* Added ScrollArea with max height */}
           <Table>
-            <TableCaption>Your top scores.</TableCaption>
+            <TableCaption>Tuas pontuações</TableCaption>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[80px]">Rank</TableHead>
-                <TableHead>Score</TableHead>
-                <TableHead className="text-right">Date</TableHead>
+                <TableHead>Pontos</TableHead>
+                <TableHead className="text-right">Data</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

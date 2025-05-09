@@ -157,23 +157,69 @@ export default function SnakeGame() {
     
     // Draw food
     ctx.fillStyle = getColorFromCSSVar('--destructive', '#E53E3E'); // Changed to destructive (red)
-    ctx.fillRect(food.x * CELL_SIZE, food.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+    ctx.beginPath();
+    ctx.arc(food.x * CELL_SIZE + CELL_SIZE/2, food.y * CELL_SIZE + CELL_SIZE/2, CELL_SIZE/2, 0, Math.PI * 2);
+    ctx.fill();
     // Add a little highlight to food
     ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-    ctx.fillRect(food.x * CELL_SIZE + CELL_SIZE * 0.2, food.y * CELL_SIZE + CELL_SIZE * 0.2, CELL_SIZE * 0.6, CELL_SIZE * 0.6);
+    ctx.beginPath();
+    ctx.arc(food.x * CELL_SIZE + CELL_SIZE/2, food.y * CELL_SIZE + CELL_SIZE/2, CELL_SIZE/2, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Draw snake
-    const snakeBodyColor = getColorFromCSSVar('--accent', '#386641');
+    // Draw snake with texture
+    const snakeBaseColor = getColorFromCSSVar('--accent', '#386641');
+    const snakeAccentColor = getColorFromCSSVar('--primary', '#2D4B36');
     const snakeSegmentBorderColor = getColorFromCSSVar('--background', '#F0F0F0');
 
+    // Criar padrão de textura para a cobra
+    const createSnakePattern = (segmentIndex: number) => {
+      // Alternar cores para criar um efeito de escamas
+      const isEvenSegment = segmentIndex % 2 === 0;
+      const patternCanvas = document.createElement('canvas');
+      patternCanvas.width = CELL_SIZE;
+      patternCanvas.height = CELL_SIZE;
+      const patternCtx = patternCanvas.getContext('2d');
+      
+      if (!patternCtx) return snakeBaseColor;
+      
+      // Cor de fundo do segmento
+      patternCtx.fillStyle = isEvenSegment ? snakeBaseColor : snakeAccentColor;
+      patternCtx.fillRect(0, 0, CELL_SIZE, CELL_SIZE);
+      
+      // Adicionar detalhes de escamas
+      patternCtx.fillStyle = isEvenSegment ? snakeAccentColor : snakeBaseColor;
+      
+      // Padrão de escamas em diagonal
+      const scaleSize = CELL_SIZE / 4;
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          if ((i + j) % 2 === 0) {
+            patternCtx.beginPath();
+            patternCtx.arc(
+              i * scaleSize + scaleSize/2, 
+              j * scaleSize + scaleSize/2, 
+              scaleSize/3, 0, Math.PI * 2
+            );
+            patternCtx.fill();
+          }
+        }
+      }
+      
+      return patternCtx.createPattern(patternCanvas, 'repeat') || snakeBaseColor;
+    };
+
     snake.forEach((segment, index) => {
-      ctx.fillStyle = snakeBodyColor;
+      // Aplicar textura ao segmento da cobra
+      const segmentPattern = createSnakePattern(index);
+      ctx.fillStyle = segmentPattern;
       ctx.fillRect(segment.x * CELL_SIZE, segment.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
       
+      // Adicionar borda ao segmento
       ctx.strokeStyle = snakeSegmentBorderColor;
       ctx.lineWidth = 1;
       ctx.strokeRect(segment.x * CELL_SIZE, segment.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
       
+      // Desenhar olhos na cabeça da cobra
       if (index === 0) { // Snake eyes for the head
         ctx.fillStyle = 'white'; // Eyes are white
         const eyeSize = CELL_SIZE / 5;
@@ -183,9 +229,21 @@ export default function SnakeGame() {
         if (direction === 'UP' || direction === 'DOWN') { // Eyes are horizontal
             ctx.fillRect(segment.x * CELL_SIZE + eyeOffset1, segment.y * CELL_SIZE + eyeOffset1, eyeSize, eyeSize); // Left eye
             ctx.fillRect(segment.x * CELL_SIZE + eyePos2Factor, segment.y * CELL_SIZE + eyeOffset1, eyeSize, eyeSize); // Right eye
+            
+            // Adicionar pupilas
+            ctx.fillStyle = 'black';
+            const pupilSize = eyeSize / 2;
+            ctx.fillRect(segment.x * CELL_SIZE + eyeOffset1 + pupilSize/2, segment.y * CELL_SIZE + eyeOffset1 + pupilSize/2, pupilSize, pupilSize);
+            ctx.fillRect(segment.x * CELL_SIZE + eyePos2Factor + pupilSize/2, segment.y * CELL_SIZE + eyeOffset1 + pupilSize/2, pupilSize, pupilSize);
         } else { // LEFT or RIGHT - Eyes are vertical
             ctx.fillRect(segment.x * CELL_SIZE + eyeOffset1, segment.y * CELL_SIZE + eyeOffset1, eyeSize, eyeSize); // Top eye
             ctx.fillRect(segment.x * CELL_SIZE + eyeOffset1, segment.y * CELL_SIZE + eyePos2Factor, eyeSize, eyeSize); // Bottom eye
+            
+            // Adicionar pupilas
+            ctx.fillStyle = 'black';
+            const pupilSize = eyeSize / 2;
+            ctx.fillRect(segment.x * CELL_SIZE + eyeOffset1 + pupilSize/2, segment.y * CELL_SIZE + eyeOffset1 + pupilSize/2, pupilSize, pupilSize);
+            ctx.fillRect(segment.x * CELL_SIZE + eyeOffset1 + pupilSize/2, segment.y * CELL_SIZE + eyePos2Factor + pupilSize/2, pupilSize, pupilSize);
         }
       }
     });
@@ -200,7 +258,7 @@ export default function SnakeGame() {
           <CardTitle className="text-center text-3xl font-bold text-primary">Snake Mania</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center space-y-4">
-          <div className="text-2xl font-semibold">Score: <span className="text-accent">{score}</span></div>
+          <div className="text-2xl font-semibold">Pontuação: <span className="text-accent">{score}</span></div>
           
           <div className="relative border-2 border-primary rounded-md shadow-inner overflow-hidden" style={{ width: BOARD_WIDTH_PX, height: BOARD_HEIGHT_PX }}>
             <canvas ref={canvasRef} width={BOARD_WIDTH_PX} height={BOARD_HEIGHT_PX} />
@@ -211,17 +269,17 @@ export default function SnakeGame() {
                 <p className="text-2xl">Final Score: {score}</p>
                 <div className="flex space-x-4">
                   <Button onClick={resetGame} variant="secondary" size="lg">
-                    <RotateCcw className="mr-2 h-5 w-5" /> Play Again
+                    <RotateCcw className="mr-2 h-5 w-5" /> Novamente
                   </Button>
-                  <Button onClick={() => router.push('/')} variant="outline" size="lg">
-                    <Home className="mr-2 h-5 w-5" /> Home
+                  <Button onClick={() => router.push('/')} variant="outline" size="lg" className='text-black'>
+                    <Home className="mr-2 h-5 w-5" /> Inicio
                   </Button>
                 </div>
               </div>
             )}
           </div>
           
-          <p className="text-sm text-muted-foreground">Use arrow keys to control the snake.</p>
+          <p className="text-sm text-muted-foreground">Use as setas do teclado para controlar a cobra.</p>
           
           {!gameOver && (
              <Button onClick={() => router.push('/')} variant="ghost" className="mt-4">
